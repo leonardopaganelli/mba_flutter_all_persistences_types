@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'models/person.dart';
+
 class AddPerson extends StatelessWidget {
   AddPerson({Key? key}) : super(key: key);
   final Text title = const Text("Nova Pessoa");
@@ -65,7 +67,12 @@ class AddPerson extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.pop(context, null);
+                            Person person = Person(
+                              firstName: _firstNameController.text,
+                              lastName: _lastNameController.text,
+                              address: _addressController.text
+                            );
+                            Navigator.pop(context, person);
                           }
                         },
                         child: const Text("Gravar"),
