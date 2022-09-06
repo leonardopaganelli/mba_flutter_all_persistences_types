@@ -81,7 +81,6 @@ class ListSQLiteWidgetState extends State<ListSQLiteWidget> {
   Widget buildListItem(int index) {
     Person p = persons[index];
 
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Container(

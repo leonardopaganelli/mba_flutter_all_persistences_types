@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mba_flutter_all_persistences_types/floor/add.dart';
+import 'package:mba_flutter_all_persistences_types/floor/daos/bookDao.dart';
+import 'package:mba_flutter_all_persistences_types/floor/database/appDatabase.dart';
 import 'package:mba_flutter_all_persistences_types/floor/models/book.dart';
 
 class ListFloorWidget extends StatefulWidget {
@@ -11,20 +13,54 @@ class ListFloorWidget extends StatefulWidget {
 }
 
 class ListFloorWidgetState extends State<ListFloorWidget> {
-  List<Book> Books = [];
+  late BookDao dao;
+  List<Book> books = [];
 
   @override
   void initState() {
     super.initState();
+
+    getAll();
   }
 
   getAll() async {
+    final database = await $FloorAppDatabase
+      .databaseBuilder("app_floor_database.db")
+      .build();
+
+    dao = database.bookDao;
+    if(dao != null) {
+      final result = await dao.findAll();
+      
+      if (result.isNotEmpty) {
+        setState(() {
+          books = result;
+        });
+      }
+    }
   }
 
-  insert(Book Book) async {
+  insert(Book book) async {
+    if(dao != null) {
+      final id = await dao.insertBook(book);
+      if(id > 0) {
+        book.id = id;
+        setState(() {
+          books.add(book);
+        });
+      }
+    }
   }
 
   delete(int index) async {
+    if(dao != null) {
+      final book = books[index];
+      await dao.deleteBook(book);
+
+      setState(() {
+        books.removeAt(index);
+      });
+    }
   }
 
   @override
@@ -37,9 +73,9 @@ class ListFloorWidgetState extends State<ListFloorWidget> {
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddBook()))
-                      .then((Book){
+                      .then((book){
                         setState(() {
-                          insert(Book);
+                          insert(book);
                         });
                       });
                 },
@@ -49,14 +85,13 @@ class ListFloorWidgetState extends State<ListFloorWidget> {
         body: ListView.separated(
           itemBuilder: (context, index) => buildListItem(index),
           separatorBuilder: (context, index) => const Divider(height: 1),
-          itemCount: Books.length
+          itemCount: books.length
         ),
     );
   }
 
   Widget buildListItem(int index) {
-    Book p = Books[index];
-
+    Book p = books[index];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
